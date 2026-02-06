@@ -3,6 +3,8 @@ import requests
 import pandas as pd
 import streamlit as st
 import plotly_express as px
+from io import BytesIO
+
 
 st.set_page_config(layout="wide", page_icon= "📃", page_title= "Fechamento Gecomerce")
 
@@ -161,19 +163,67 @@ df_filtered = df[df["MÊS "] == mes].reset_index(drop=True)
 with coluna4:
     empresa = st.multiselect("Empresas", df_filtered["EMPRESAS"].unique())
 
-
-df_produtores_por_empresa = df_filtered.query('EMPRESAS == @empresa')
-df_produtores_por_empresa = df_produtores_por_empresa.drop(columns=['title','card_id','VALOR NOTA FISCALYOSHIDA ',
-                                                                    'created_at','phase'])
-
-
 df_produtores = df_filtered.groupby(['title'])['VALOR PEDIDO DE TRANSFERENCIA '].sum().reset_index()
 df_produtores = df_produtores.sort_values(by= "VALOR PEDIDO DE TRANSFERENCIA ", ascending= False)
 
 
 
+
+df_produtores_por_empresa = df_filtered.query('EMPRESAS == @empresa')
+df_produtores_por_empresa = df_produtores_por_empresa.drop(columns=['title','card_id','VALOR NOTA FISCALYOSHIDA ',
+                                                                    'created_at','phase'])
+
+def to_excel(df):
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine="openpyxl") as writer:
+        df.to_excel(writer, index=False, sheet_name="Produtores")
+    return output.getvalue()
+
+
 with coluna4:
-    df_produtores_por_empresa
+    # mostra tabela na tela
+    st.dataframe(df_produtores_por_empresa)
+
+    # cria cópia só para exportação
+    df_excel = df_produtores_por_empresa.copy()
+
+    # colunas que precisam de ajuste
+    colunas_valor = [
+        "VALOR DO PEDIDO DE TRANSFERÊNCIA ",
+        "VALOR TOTAL DA NOTA FISCAL"
+    ]
+
+    for col in colunas_valor:
+        if col in df_excel.columns:
+
+            # se for texto, normaliza
+            if df_excel[col].dtype == object:
+                df_excel[col] = (
+                    df_excel[col]
+                    .astype(str)
+                    .str.replace(",", ".", regex=False)
+                )
+
+            # converte para número
+            df_excel[col] = pd.to_numeric(df_excel[col], errors="coerce")
+
+            # formata: 66601,80
+            df_excel[col] = df_excel[col].apply(
+                lambda x: f"{x:.2f}".replace(".", ",") if pd.notnull(x) else ""
+            )
+
+
+    # gera excel
+    excel_bytes = to_excel(df_excel)
+
+    # botão
+    st.download_button(
+        label="Baixar Planilha",
+        data=excel_bytes,
+        file_name=f"produtores_{empresa}.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
 
 
 # ------------------------------------------------------------------------------
@@ -195,6 +245,7 @@ df_faturamento_por_empresa = df_faturamento_por_empresa.sort_values(by= "VALOR P
 df_faturamento_por_empresa["VALOR_FORMATADO"] = df_faturamento_por_empresa["VALOR PEDIDO DE TRANSFERENCIA "].apply(
     lambda x: f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 )
+
 
 bar_chart_mensal = px.bar(df_faturamento_por_empresa, x= "EMPRESAS", y= "VALOR PEDIDO DE TRANSFERENCIA ", text="VALOR_FORMATADO",
             color_discrete_sequence=["#0270AF"])
@@ -241,7 +292,7 @@ if st.button("Atualizar"):
 
 borda = """
             <style>
-            [data-testid="column"]
+            [data-testid="stColumn"]
             {
             background-color: #fff;
             border-radius: 15px;
