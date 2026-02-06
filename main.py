@@ -179,7 +179,7 @@ with coluna4:
 # ------------------------------------------------------------------------------
 # KPIs
 
-qtd_operacoes = df_filtered["VALOR PEDIDO DE TRANSFERENCIA "].unique().shape[0]
+qtd_operacoes = df_filtered.shape[0]
 
 
 # -------------------------------------------------------------------------------
