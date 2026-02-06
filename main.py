@@ -197,7 +197,7 @@ df_faturamento_por_empresa["VALOR_FORMATADO"] = df_faturamento_por_empresa["VALO
 )
 
 bar_chart_mensal = px.bar(df_faturamento_por_empresa, x= "EMPRESAS", y= "VALOR PEDIDO DE TRANSFERENCIA ", text="VALOR_FORMATADO",
-            color_discrete_sequence=["#28995E"])
+            color_discrete_sequence=["#0270AF"])
 
 bar_chart_mensal.update_layout(
     xaxis_title=None,
