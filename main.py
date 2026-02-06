@@ -292,7 +292,7 @@ if st.button("Atualizar"):
 
 borda = """
             <style>
-            [data-testid="stColumn"]
+            [data-testid="column"]
             {
             background-color: #fff;
             border-radius: 15px;
@@ -306,9 +306,9 @@ borda = """
 
 st.markdown(borda, unsafe_allow_html=True)  
 
-# hide_header = """
-#     <style>
-#         header {visibility: hidden;}
-#     </style>
-# """
-# st.markdown(hide_header, unsafe_allow_html=True)
+hide_header = """
+    <style>
+        header {visibility: hidden;}
+    </style>
+"""
+st.markdown(hide_header, unsafe_allow_html=True)
