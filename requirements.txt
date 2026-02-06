@@ -1,7 +1,8 @@
 requests
 pandas
-streamlit==1.36
-io
-ExcelWriter
+streamlit==1.36.0
 plotly.express
 altair==4.2.2
+openpyxl
+xlsxwriter
+rich<14
