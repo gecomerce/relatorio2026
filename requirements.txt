@@ -2,6 +2,6 @@ requests
 pandas
 streamlit==1.36
 io
-openpyxl
+ExcelWriter
 plotly.express
 altair==4.2.2
