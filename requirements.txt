@@ -1,6 +1,6 @@
 requests
 pandas
 streamlit==1.36
-BytesIO
+io
 plotly.express
 altair==4.2.2
