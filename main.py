@@ -148,8 +148,8 @@ st.divider()
 # with tab1:
 card1, card2, card4 = st.columns([2,2,1.2])
 coluna_faturamento_mensal, = st.columns(1)
+container_produtor, = st.columns(1)
 st.divider()
-
 coluna4, = st.columns(1)
 # -------------------------------------------------------------------------
 
@@ -161,17 +161,31 @@ df_filtered = df[df["MÊS "] == mes].reset_index(drop=True)
 
 
 with coluna4:
-    empresa = st.multiselect("Empresas", df_filtered["EMPRESAS"].unique())
+    empresa = st.multiselect("Empresas", df_filtered["EMPRESAS"].unique(),default=df_filtered["EMPRESAS"].unique())
 
-df_produtores = df_filtered.groupby(['title'])['VALOR PEDIDO DE TRANSFERENCIA '].sum().reset_index()
+df_produtores = df_filtered.groupby(['NOME DO PRODUTOR RURAL','EMPRESAS'])['VALOR PEDIDO DE TRANSFERENCIA '].sum().reset_index()
 df_produtores = df_produtores.sort_values(by= "VALOR PEDIDO DE TRANSFERENCIA ", ascending= False)
 
+with container_produtor:
+    empresa_filtro = st.multiselect("Selecione Empresas", df_filtered["EMPRESAS"].unique(),default=df_filtered["EMPRESAS"].unique())
+    df_produtores = df_produtores.query('EMPRESAS == @empresa_filtro')
+    total_produtores_df = df_produtores["VALOR PEDIDO DE TRANSFERENCIA "].sum()
 
+df_produtores["VALOR PEDIDO DE TRANSFERENCIA "] = df_produtores["VALOR PEDIDO DE TRANSFERENCIA "].apply(
+    lambda x: f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
 
+with container_produtor:
+    st.subheader("Produtor Por Empresa", anchor=False)
+    st.dataframe(df_produtores)
+    st.text(total_produtores_df)
 
 df_produtores_por_empresa = df_filtered.query('EMPRESAS == @empresa')
 df_produtores_por_empresa = df_produtores_por_empresa.drop(columns=['title','card_id','VALOR NOTA FISCALYOSHIDA ',
                                                                     'created_at','phase'])
+
+
+
+
 
 def to_excel(df):
     output = BytesIO()
@@ -181,13 +195,11 @@ def to_excel(df):
 
 
 with coluna4:
-    # mostra tabela na tela
+
     st.dataframe(df_produtores_por_empresa)
 
-    # cria cópia só para exportação
     df_excel = df_produtores_por_empresa.copy()
 
-    # colunas que precisam de ajuste
     colunas_valor = [
         "VALOR DO PEDIDO DE TRANSFERÊNCIA ",
         "VALOR TOTAL DA NOTA FISCAL"
@@ -196,7 +208,6 @@ with coluna4:
     for col in colunas_valor:
         if col in df_excel.columns:
 
-            # se for texto, normaliza
             if df_excel[col].dtype == object:
                 df_excel[col] = (
                     df_excel[col]
@@ -204,19 +215,16 @@ with coluna4:
                     .str.replace(",", ".", regex=False)
                 )
 
-            # converte para número
             df_excel[col] = pd.to_numeric(df_excel[col], errors="coerce")
 
-            # formata: 66601,80
             df_excel[col] = df_excel[col].apply(
                 lambda x: f"{x:.2f}".replace(".", ",") if pd.notnull(x) else ""
             )
 
 
-    # gera excel
     excel_bytes = to_excel(df_excel)
 
-    # botão
+
     st.download_button(
         label="Baixar Planilha",
         data=excel_bytes,
@@ -292,7 +300,7 @@ if st.button("Atualizar"):
 
 borda = """
             <style>
-            [data-testid="column"]
+            [data-testid="stColumn"]
             {
             background-color: #fff;
             border-radius: 15px;
