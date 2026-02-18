@@ -181,12 +181,10 @@ with container_produtor:
     # st.text(total_produtores_df)
 
 df_produtores_por_empresa = df_filtered.query('EMPRESAS == @empresa')
-df_produtores_por_empresa = df_produtores_por_empresa.drop(columns=['title','card_id','VALOR NOTA FISCALYOSHIDA ',
-                                                                    'created_at','phase'])
+df_produtores_por_empresa = df_produtores_por_empresa.drop(columns=['title','card_id','VALOR NOTA FISCALYOSHIDA ','created_at','phase'])
 
 
-
-
+# FUNCAO BAIXAR PLANILHA LETICIA
 
 def to_excel(df):
     output = BytesIO()
