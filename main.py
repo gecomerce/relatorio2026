@@ -176,7 +176,7 @@ df_produtores["VALOR PEDIDO DE TRANSFERENCIA "] = df_produtores["VALOR PEDIDO DE
 
 with container_produtor:
     st.subheader("Produtor Por Empresa", anchor=False)
-    st.dataframe(df_produtores, width="stretch")
+    st.dataframe(df_produtores, use_container_width=True)
     st.metric(" ",f"R$ {total_produtores_df:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
     # st.text(total_produtores_df)
 
