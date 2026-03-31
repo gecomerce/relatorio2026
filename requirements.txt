@@ -1,6 +1,7 @@
 requests
 pandas
-streamlit==1.36.0
+# streamlit==1.36.0
+streamlit
 plotly.express
 altair==4.2.2
 openpyxl
