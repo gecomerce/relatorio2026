@@ -300,7 +300,7 @@ if st.button("Atualizar"):
 
 borda = """
             <style>
-            [data-testid="stcolun"]
+            [data-testid="column"]
             {
             background-color: #fff;
             border-radius: 15px;
