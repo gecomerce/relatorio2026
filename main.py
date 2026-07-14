@@ -1,4 +1,5 @@
 import sys
+from pandas import io
 import requests
 import pandas as pd
 import streamlit as st
@@ -14,7 +15,7 @@ with open("style.css") as f:
 @st.cache_data
 def load_data():
     try:
-        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="ignore")
     except Exception:
         pass
 
@@ -117,7 +118,7 @@ col = 'VALOR TOTAL DA NOTA FISCAL'
 df[col] = (
     df[col]
     .astype(str)
-    .str.replace('R\$', '', regex=True)
+    .str.replace(r'R\$', '', regex=True)
     .str.replace('.', '', regex=False)
     .str.replace(',', '.', regex=False)
     .str.strip()
@@ -299,7 +300,7 @@ if st.button("Atualizar"):
 
 borda = """
             <style>
-            [data-testid="column"]
+            [data-testid="stcolun"]
             {
             background-color: #fff;
             border-radius: 15px;
