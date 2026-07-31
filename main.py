@@ -19,10 +19,14 @@ def load_data():
     except Exception:
         pass
 
-    API_TOKEN = "eyJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJQaXBlZnkiLCJpYXQiOjE3NTU4NjcwNDMsImp0aSI6IjU1MDBhMjA5LWZkMmUtNDRlNC05MzVlLWQ2NmM4NGI3ZmQ3NiIsInN1YiI6MzAxMDA4ODExLCJ1c2VyIjp7ImlkIjozMDEwMDg4MTEsImVtYWlsIjoiY29tZXJjaWFsQGdlY29tZXJjZS5jb20uYnIifX0.mnbZcuyfOpJxiTZOhLwTpQu4BAb1JsT88oQb8aCr6s9oFYIGD_SOUdVEvkXXZ40LmBeseP_gjm7z-pMQC9MzRw"
-    ORG_ID = 300380850
-    PIPE_NAME = "RELATORIOS MENSAIS 2026" 
-    URL = "https://api.pipefy.com/graphql"
+
+    import streamlit as st
+
+    API_TOKEN = st.secrets["API_TOKEN"]
+    ORG_ID = st.secrets["ORG_ID"]
+    PIPE_NAME = st.secrets["PIPE_NAME"]
+    URL = st.secrets["URL"]
+
 
     headers = {
         "Authorization": f"Bearer {API_TOKEN}",
