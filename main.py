@@ -20,8 +20,6 @@ def load_data():
         pass
 
 
-    import streamlit as st
-
     API_TOKEN = st.secrets["API_TOKEN"]
     ORG_ID = st.secrets["ORG_ID"]
     PIPE_NAME = st.secrets["PIPE_NAME"]
