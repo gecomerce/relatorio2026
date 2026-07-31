@@ -1,9 +1,8 @@
 requests
 pandas
-streamlit==1.36.0
 plotly
-altair==5.3.0
+altair
 openpyxl
 xlsxwriter
-rich==13.7.1
-pillow==9.5.0
+rich
+pillow
