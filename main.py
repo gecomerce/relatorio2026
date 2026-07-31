@@ -12,18 +12,17 @@ st.set_page_config(layout="wide", page_icon= "📃", page_title= "Fechamento Gec
 with open("style.css") as f:
     st.markdown(f"<style>{f.read()}</style>",unsafe_allow_html = True)
 
+    API_TOKEN = st.secrets["API_TOKEN"]
+    ORG_ID = st.secrets["ORG_ID"]
+    PIPE_NAME = st.secrets["PIPE_NAME"]
+    URL = st.secrets["URL"]
+
 @st.cache_data
 def load_data():
     try:
         sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="ignore")
     except Exception:
         pass
-
-
-    API_TOKEN = st.secrets["API_TOKEN"]
-    ORG_ID = st.secrets["ORG_ID"]
-    PIPE_NAME = st.secrets["PIPE_NAME"]
-    URL = st.secrets["URL"]
 
 
     headers = {
