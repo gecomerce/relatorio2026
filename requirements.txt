@@ -1,6 +1,6 @@
 requests
 pandas
-plotly
+plotly.express
 altair
 openpyxl
 xlsxwriter
