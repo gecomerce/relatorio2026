@@ -1,14 +1,8 @@
-streamlit
-starlette==0.40.0
-uvicorn==0.29.0
-
-requests
+streamlit==1.36.0
 pandas
 plotly
 altair
 openpyxl
 xlsxwriter
 rich
-
-pillow-simd
-
+requests
