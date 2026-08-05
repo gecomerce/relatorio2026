@@ -1,6 +1,11 @@
+
+streamlit==1.36.0
+starlette==0.40.0
+uvicorn==0.29.0
+
 requests
 pandas
-plotly.express
+plotly
 altair
 openpyxl
 xlsxwriter
