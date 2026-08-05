@@ -1,22 +1,21 @@
 import sys
-import io
+from pandas import io
 import requests
 import pandas as pd
 import streamlit as st
-import plotly.express as px
+import plotly_express as px
 from io import BytesIO
 
-st.set_page_config(layout="wide", page_icon="📃", page_title="Fechamento Gecomerce")
 
-# CSS
+st.set_page_config(layout="wide", page_icon= "📃", page_title= "Fechamento Gecomerce")
+
 with open("style.css") as f:
-    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+    st.markdown(f"<style>{f.read()}</style>",unsafe_allow_html = True)
 
-# Secrets
-API_TOKEN = st.secrets["API_TOKEN"]
-ORG_ID = st.secrets["ORG_ID"]
-PIPE_NAME = st.secrets["PIPE_NAME"]
-URL = st.secrets["URL"]
+    API_TOKEN = st.secrets["API_TOKEN"]
+    ORG_ID = st.secrets["ORG_ID"]
+    PIPE_NAME = st.secrets["PIPE_NAME"]
+    URL = st.secrets["URL"]
 
 @st.cache_data
 def load_data():
@@ -24,6 +23,7 @@ def load_data():
         sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="ignore")
     except Exception:
         pass
+
 
     headers = {
         "Authorization": f"Bearer {API_TOKEN}",
@@ -43,6 +43,7 @@ def load_data():
     resp = requests.post(URL, json={"query": query_pipes}, headers=headers)
     pipes = resp.json().get("data", {}).get("organization", {}).get("pipes", [])
 
+
     pipe_id = None
     for pipe in pipes:
         if pipe["name"].strip().lower() == PIPE_NAME.strip().lower():
@@ -52,6 +53,7 @@ def load_data():
     if not pipe_id:
         st.error(f"Pipe '{PIPE_NAME}' não encontrado!")
         return pd.DataFrame()
+
 
     all_cards = []
     has_next_page = True
@@ -105,21 +107,24 @@ def load_data():
     df = pd.DataFrame(all_cards)
     return df
 
+
 # -----------------------------------------------------------------------------
 
 df = load_data()
 df = df.rename(columns={"EMPRESAS ": "EMPRESAS"})
 
-col = "VALOR TOTAL DA NOTA FISCAL"
+
+col = 'VALOR TOTAL DA NOTA FISCAL'
 
 df[col] = (
     df[col]
     .astype(str)
-    .str.replace(r"R\$", "", regex=True)
-    .str.replace(".", "", regex=False)
-    .str.replace(",", ".", regex=False)
+    .str.replace(r'R\$', '', regex=True)
+    .str.replace('.', '', regex=False)
+    .str.replace(',', '.', regex=False)
     .str.strip()
 )
+
 
 df["VALOR PEDIDO DE TRANSFERENCIA "] = pd.to_numeric(
     df["VALOR PEDIDO DE TRANSFERENCIA "]
@@ -131,10 +136,9 @@ df["VALOR PEDIDO DE TRANSFERENCIA "] = pd.to_numeric(
     errors="coerce"
 )
 
-meses = [
-    "JANEIRO", "FEVEREIRO", "MARÇO", "ABRIL", "MAIO", "JUNHO",
-    "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO"
-]
+
+meses = ["JANEIRO", "FEVEREIRO", "MARÇO", "ABRIL", "MAIO", "JUNHO", "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO"]
+
 
 # ------------------------------------------------------------------------
 # LAYOUT
@@ -142,39 +146,47 @@ meses = [
 st.title("Fechamento Gecomerce 2026", anchor=False)
 st.divider()
 
-card1, card2, card4 = st.columns([2, 2, 1.2])
+
+# with tab1:
+card1, card2, card4 = st.columns([2,2,1.2])
 coluna_faturamento_mensal, = st.columns(1)
 container_produtor, = st.columns(1)
 st.divider()
 coluna4, = st.columns(1)
+# -------------------------------------------------------------------------
 
 with card4:
     mes = st.selectbox("Mês", meses)
 
+
 df_filtered = df[df["MÊS "] == mes].reset_index(drop=True)
 
-with coluna4:
-    empresa = st.multiselect("Empresas", df_filtered["EMPRESAS"].unique(), default=df_filtered["EMPRESAS"].unique())
 
-df_produtores = df_filtered.groupby(["NOME DO PRODUTOR RURAL", "EMPRESAS"])["VALOR PEDIDO DE TRANSFERENCIA "].sum().reset_index()
-df_produtores = df_produtores.sort_values(by="VALOR PEDIDO DE TRANSFERENCIA ", ascending=False)
+with coluna4:
+    empresa = st.multiselect("Empresas", df_filtered["EMPRESAS"].unique(),default=df_filtered["EMPRESAS"].unique())
+
+df_produtores = df_filtered.groupby(['NOME DO PRODUTOR RURAL','EMPRESAS'])['VALOR PEDIDO DE TRANSFERENCIA '].sum().reset_index()
+df_produtores = df_produtores.sort_values(by= "VALOR PEDIDO DE TRANSFERENCIA ", ascending= False)
 
 with container_produtor:
-    empresa_filtro = st.multiselect("Selecione Empresas", df_filtered["EMPRESAS"].unique(), default=df_filtered["EMPRESAS"].unique())
-    df_produtores = df_produtores.query("EMPRESAS == @empresa_filtro")
+    empresa_filtro = st.multiselect("Selecione Empresas", df_filtered["EMPRESAS"].unique(),default=df_filtered["EMPRESAS"].unique())
+    df_produtores = df_produtores.query('EMPRESAS == @empresa_filtro')
     total_produtores_df = df_produtores["VALOR PEDIDO DE TRANSFERENCIA "].sum()
 
 df_produtores["VALOR PEDIDO DE TRANSFERENCIA "] = df_produtores["VALOR PEDIDO DE TRANSFERENCIA "].apply(
-    lambda x: f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-)
+    lambda x: f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
 
 with container_produtor:
     st.subheader("Produtor Por Empresa", anchor=False)
     st.dataframe(df_produtores, use_container_width=True)
-    st.metric(" ", f"R$ {total_produtores_df:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+    st.metric(" ",f"R$ {total_produtores_df:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+    # st.text(total_produtores_df)
 
-df_produtores_por_empresa = df_filtered.query("EMPRESAS == @empresa")
-df_produtores_por_empresa = df_produtores_por_empresa.drop(columns=["title", "card_id", "VALOR NOTA FISCALYOSHIDA ", "created_at", "phase"])
+df_produtores_por_empresa = df_filtered.query('EMPRESAS == @empresa')
+df_produtores_por_empresa = df_produtores_por_empresa.drop(columns=['title','card_id','VALOR NOTA FISCALYOSHIDA ','created_at','phase'])
+
+
+# FUNCAO BAIXAR PLANILHA LETICIA
 
 def to_excel(df):
     output = BytesIO()
@@ -182,7 +194,9 @@ def to_excel(df):
         df.to_excel(writer, index=False, sheet_name="Produtores")
     return output.getvalue()
 
+
 with coluna4:
+
     st.dataframe(df_produtores_por_empresa)
 
     df_excel = df_produtores_por_empresa.copy()
@@ -194,8 +208,13 @@ with coluna4:
 
     for col in colunas_valor:
         if col in df_excel.columns:
+
             if df_excel[col].dtype == object:
-                df_excel[col] = df_excel[col].astype(str).str.replace(",", ".", regex=False)
+                df_excel[col] = (
+                    df_excel[col]
+                    .astype(str)
+                    .str.replace(",", ".", regex=False)
+                )
 
             df_excel[col] = pd.to_numeric(df_excel[col], errors="coerce")
 
@@ -203,7 +222,9 @@ with coluna4:
                 lambda x: f"{x:.2f}".replace(".", ",") if pd.notnull(x) else ""
             )
 
+
     excel_bytes = to_excel(df_excel)
+
 
     st.download_button(
         label="Baixar Planilha",
@@ -212,69 +233,91 @@ with coluna4:
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 
+
+
+# ------------------------------------------------------------------------------
 # KPIs
+
 qtd_operacoes = df_filtered.shape[0]
 
+
+# -------------------------------------------------------------------------------
+# FATURAMENTO MENSAL GRAFICO
+
+df_faturamento_mensal = df_filtered.groupby(["MÊS "])["VALOR PEDIDO DE TRANSFERENCIA "].sum().reset_index()
+
+
 df_faturamento_por_empresa = df_filtered.groupby(["EMPRESAS"])["VALOR PEDIDO DE TRANSFERENCIA "].sum().reset_index()
-df_faturamento_por_empresa = df_faturamento_por_empresa.sort_values(by="VALOR PEDIDO DE TRANSFERENCIA ", ascending=False)
+df_faturamento_por_empresa = df_faturamento_por_empresa.sort_values(by= "VALOR PEDIDO DE TRANSFERENCIA ", ascending= False)
+
 
 df_faturamento_por_empresa["VALOR_FORMATADO"] = df_faturamento_por_empresa["VALOR PEDIDO DE TRANSFERENCIA "].apply(
     lambda x: f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 )
 
-bar_chart_mensal = px.bar(
-    df_faturamento_por_empresa,
-    x="EMPRESAS",
-    y="VALOR PEDIDO DE TRANSFERENCIA ",
-    text="VALOR_FORMATADO",
-    color_discrete_sequence=["#0270AF"]
-)
+
+bar_chart_mensal = px.bar(df_faturamento_por_empresa, x= "EMPRESAS", y= "VALOR PEDIDO DE TRANSFERENCIA ", text="VALOR_FORMATADO",
+            color_discrete_sequence=["#0270AF"])
 
 bar_chart_mensal.update_layout(
     xaxis_title=None,
     yaxis_title=None,
-    xaxis=dict(showgrid=False, showline=False),
-    yaxis=dict(showgrid=False, showline=False)
+    xaxis=dict(
+        showgrid=False,
+        showline=False
+    ),
+    yaxis=dict(
+        showgrid=False,
+        showline=False
+    )
 )
 
-bar_chart_mensal.update_traces(textposition="outside")
+
+bar_chart_mensal.update_traces(
+    textposition="outside"
+)
+
 
 with coluna_faturamento_mensal:
-    st.subheader("Valor Por Empresa", anchor=False)
-    st.plotly_chart(bar_chart_mensal, use_container_width=True)
+    st.subheader("Valor Por Empresa", anchor= False)
+    st.plotly_chart(bar_chart_mensal, width= "stretch")
+
+# ----------------------------------------------------------------------------
 
 total = df_filtered["VALOR PEDIDO DE TRANSFERENCIA "].sum()
 
 with card1:
-    st.metric("Total Valor", f"R$ {total:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+    st.metric("Total Valor",f"R$ {total:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
 
 with card2:
     st.metric("QTD Operações", qtd_operacoes)
+
 
 if st.button("Atualizar"):
     st.cache_data.clear()
     load_data()
 
-# Estilos
-borda = """
-<style>
-[data-testid="stColumn"] {
-    background-color: #fff;
-    border-radius: 15px;
-    padding: 10px;
-    text-align: center;
-    opacity: 100%;
-    box-shadow: 5px 8px 25px -3px rgba(0,0,0,0.75);
-}
-</style>
-"""
+# --------------------------------------------------------------------------------
 
-st.markdown(borda, unsafe_allow_html=True)
+borda = """
+            <style>
+            [data-testid="stColumn"]
+            {
+            background-color: #fff;
+            border-radius: 15px;
+            padding: 10px;
+            text-align: center;
+            opacity: 100%;
+            box-shadow: 5px 8px 25px -3px rgba(0,0,0,0.75);
+            }
+            </style>
+            """
+
+st.markdown(borda, unsafe_allow_html=True)  
 
 hide_header = """
-<style>
-    header {visibility: hidden;}
-</style>
+    <style>
+        header {visibility: hidden;}
+    </style>
 """
-
 st.markdown(hide_header, unsafe_allow_html=True)
