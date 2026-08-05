@@ -1,4 +1,3 @@
-
 streamlit==1.36.0
 starlette==0.40.0
 uvicorn==0.29.0
@@ -10,4 +9,6 @@ altair
 openpyxl
 xlsxwriter
 rich
-pillow
+
+pillow-simd
+
